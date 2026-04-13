@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { Image, Type, Video, Camera } from "lucide-react";
 import NavBar, { useNavBar } from "./layout/NavBar";
 
-// Filters definition
 const filters = [
   { name: "Normal", style: "none" },
   { name: "B&W", style: "grayscale(100%)" },
@@ -36,9 +35,7 @@ export default function BoothPage({ onBack }: Omit<BoothPageProps, "dark">) {
 
   useEffect(() => {
     startCamera();
-    return () => {
-      stream?.getTracks().forEach((t) => t.stop());
-    };
+    return () => { stream?.getTracks().forEach((t) => t.stop()); };
   }, []);
 
   const startCamera = async () => {
@@ -47,9 +44,7 @@ export default function BoothPage({ onBack }: Omit<BoothPageProps, "dark">) {
         video: { facingMode: "user", width: 1280, height: 720 },
       });
       setStream(s);
-      if (videoRef.current) {
-        videoRef.current.srcObject = s;
-      }
+      if (videoRef.current) videoRef.current.srcObject = s;
     } catch (err) {
       console.error("Camera error:", err);
     }
@@ -82,12 +77,10 @@ export default function BoothPage({ onBack }: Omit<BoothPageProps, "dark">) {
   return (
     <div
       className="min-h-screen flex flex-col transition-colors duration-300"
-      style={{
-        fontFamily: "'Outfit', sans-serif",
-        backgroundColor: dark ? "#0f0f0f" : "#f8f8f8",
-      }}
+      style={{ fontFamily: "'Outfit', sans-serif", backgroundColor: dark ? "#0f0f0f" : "#f8f8f8" }}
     >
       <NavBar dark={dark} onToggleDark={toggleDark} onLogoClick={onBack} />
+
       {/* Mode Selector */}
       <div className="flex justify-center pt-6 pb-4">
         <div
@@ -130,10 +123,7 @@ export default function BoothPage({ onBack }: Omit<BoothPageProps, "dark">) {
             className="w-full h-full object-cover scale-x-[-1]"
             style={{ filter: filters[activeFilter].style }}
           />
-          {/* Flash effect */}
-          {capturing && (
-            <div className="absolute inset-0 bg-white animate-ping opacity-80 rounded-3xl" />
-          )}
+          {capturing && <div className="absolute inset-0 bg-white animate-ping opacity-80 rounded-3xl" />}
         </div>
       </div>
 
@@ -152,7 +142,6 @@ export default function BoothPage({ onBack }: Omit<BoothPageProps, "dark">) {
                 boxShadow: activeFilter === i ? "0 0 0 2px rgba(220,38,38,0.3)" : "none",
               }}
             >
-              {/* Filter preview — solid color swatch */}
               <div
                 className="w-full h-full"
                 style={{
@@ -185,7 +174,6 @@ export default function BoothPage({ onBack }: Omit<BoothPageProps, "dark">) {
         </button>
       </div>
 
-      {/* Hidden canvas for capture */}
       <canvas ref={canvasRef} className="hidden" />
     </div>
   );
