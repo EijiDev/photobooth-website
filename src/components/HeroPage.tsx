@@ -85,7 +85,7 @@ export default function SnapBooth({ onStartBooth }: SnapBoothProps) {
         {/* CTA */}
         <button
           onClick={onStartBooth}
-          className="inline-flex items-center gap-3 bg-red-600 hover:bg-red-700 active:scale-95 transition-all duration-700 text-white text-base px-9 py-4 rounded-full shadow-md shadow-red-200"
+          className="inline-flex items-center gap-3 bg-red-600 hover:bg-red-700 active:scale-95 transition-all duration-700 text-white text-base px-9 py-4 rounded-full shadow-md"
           style={{ fontWeight: 700, opacity: mounted ? 1 : 0, transform: mounted ? "translateY(0)" : "translateY(24px)", transitionDelay: "400ms" }}
         >
           <Camera size={18} strokeWidth={2.5} />
