@@ -8,7 +8,7 @@ export const steps = [
   {
     number: 2,
     title: "Strike a Pose",
-    description: "Pick your filter, choose your mode, and get ready.",
+    description: "Pick your frame, grid, choose your filter, and get ready.",
   },
   {
     number: 3,
