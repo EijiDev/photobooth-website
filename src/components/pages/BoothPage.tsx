@@ -6,7 +6,7 @@ import {
   timers,
   gridShots,
   gridLabels,
-} from "../utils/booth.constants";
+} from "../../utils/booth.constants";
 import { useCamera } from "../../hooks/useCamera";
 import { useCapture } from "../../hooks/useCapture";
 

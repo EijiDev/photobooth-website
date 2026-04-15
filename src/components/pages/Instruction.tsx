@@ -1,5 +1,5 @@
-import { steps } from "../utils/instrucions.constants";
-import boothImage from "../assets/booth-img.jpg";
+import { steps } from "../../utils/instructions.constants";
+import boothImage from "../../assets/booth-img.jpg";
 
 interface HowItWorksProps {
   dark?: boolean;

@@ -354,7 +354,6 @@ export default function SetupPage({
   const [grid, setGrid] = useState("single");
   const [frame, setFrame] = useState("none");
 
-  const bg = dark ? "#0f0f0f" : "#ffffff";
   const text = dark ? "#f4f4f5" : "#111827";
   const sub = dark ? "#71717a" : "#6b7280";
   const border = dark ? "#2a2a2a" : "#e5e7eb";
@@ -408,7 +407,7 @@ export default function SetupPage({
               Choose Mode
             </span>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             {modes.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}

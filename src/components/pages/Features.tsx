@@ -1,13 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import { features } from "../utils/features.constants";
+import { features } from "../../utils/features.constants";
 
 function useScrollReveal() {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { setVisible(true); observer.disconnect(); } },
-      { threshold: 0.15 }
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15 },
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
@@ -15,7 +20,19 @@ function useScrollReveal() {
   return { ref, visible };
 }
 
-function FeatureCard({ icon: Icon, title, description, dark, index }: { icon: any; title: string; description: string; dark: boolean; index: number }) {
+function FeatureCard({
+  icon: Icon,
+  title,
+  description,
+  dark,
+  index,
+}: {
+  icon: any;
+  title: string;
+  description: string;
+  dark: boolean;
+  index: number;
+}) {
   const { ref, visible } = useScrollReveal();
   return (
     <div
@@ -98,7 +115,14 @@ export default function Features({ dark = false }: { dark?: boolean }) {
       {/* Cards grid */}
       <div className="grid grid-cols-4 gap-5 max-w-6xl mx-auto">
         {features.map((f, i) => (
-          <FeatureCard key={f.title} icon={f.icon} title={f.title} description={f.description} dark={dark} index={i} />
+          <FeatureCard
+            key={f.title}
+            icon={f.icon}
+            title={f.title}
+            description={f.description}
+            dark={dark}
+            index={i}
+          />
         ))}
       </div>
     </section>

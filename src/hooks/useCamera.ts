@@ -1,5 +1,5 @@
 import { useRef, useEffect } from "react";
-import { filters } from "./booth.constants";
+import { filters } from "../utils/booth.constants";
 
 export function useCamera(activeFilter: number) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -9,7 +9,9 @@ export function useCamera(activeFilter: number) {
     startCamera();
     return () => {
       if (videoRef.current?.srcObject) {
-        (videoRef.current.srcObject as MediaStream).getTracks().forEach(t => t.stop());
+        (videoRef.current.srcObject as MediaStream)
+          .getTracks()
+          .forEach((t) => t.stop());
       }
     };
   }, []);
@@ -20,7 +22,9 @@ export function useCamera(activeFilter: number) {
         video: { facingMode: "user", width: 1280, height: 720 },
       });
       if (videoRef.current) videoRef.current.srcObject = s;
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const captureFrame = (): string => {

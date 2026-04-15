@@ -1,7 +1,11 @@
 import { useState } from "react";
-import { compositeGrid } from "./compositeGrid";
+import { compositeGrid } from "../utils/compositeGrid";
 
-export function useCapture(totalShots: number, grid: string, captureFrame: () => string) {
+export function useCapture(
+  totalShots: number,
+  grid: string,
+  captureFrame: () => string,
+) {
   const [shots, setShots] = useState<string[]>([]);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [finalImage, setFinalImage] = useState<string | null>(null);
@@ -16,7 +20,7 @@ export function useCapture(totalShots: number, grid: string, captureFrame: () =>
         clearInterval(interval);
         setCountdown(null);
         const dataUrl = captureFrame();
-        setShots(prev => {
+        setShots((prev) => {
           const next = [...prev, dataUrl];
           if (next.length >= totalShots) {
             compositeGrid(grid, next).then(setFinalImage);
@@ -42,7 +46,8 @@ export function useCapture(totalShots: number, grid: string, captureFrame: () =>
     const res = await fetch(img);
     const blob = await res.blob();
     const file = new File([blob], "snapbooth.png", { type: "image/png" });
-    if (navigator.share) await navigator.share({ files: [file], title: "SnapBooth" });
+    if (navigator.share)
+      await navigator.share({ files: [file], title: "SnapBooth" });
   };
 
   const handleRetake = () => {
@@ -50,5 +55,13 @@ export function useCapture(totalShots: number, grid: string, captureFrame: () =>
     setFinalImage(null);
   };
 
-  return { shots, countdown, finalImage, handleCapture, handleDownload, handleShare, handleRetake };
+  return {
+    shots,
+    countdown,
+    finalImage,
+    handleCapture,
+    handleDownload,
+    handleShare,
+    handleRetake,
+  };
 }
