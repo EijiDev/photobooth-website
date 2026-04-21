@@ -64,8 +64,6 @@ export default function SnapBooth({
             transitionDelay: "0ms",
           }}
         >
-          <Heart size={13} />
-          Capture the moment
         </div>
 
         {/* Headline */}
