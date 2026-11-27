@@ -8,16 +8,17 @@ interface HowItWorksProps {
 export default function HowItWorks({ dark = false }: HowItWorksProps) {
   return (
     <section
-      className="px-16 py-20 transition-colors duration-300"
+      id="how-it-works"
+      className="scroll-mt-4 px-4 py-16 sm:px-16 sm:py-20 transition-colors duration-300"
       style={{
         fontFamily: "'Outfit', sans-serif",
-        backgroundColor: dark ? "#0f0f0f" : "#fdf2f2",
+        backgroundColor: dark ? "#111111" : "#ffffff",
       }}
     >
-      <div className="max-w-6xl mx-auto flex items-center justify-center gap-10">
-        <div className="shrink-0">
+      <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-16">
+        <div className="min-w-0 lg:flex-1">
           <h2
-            className="text-5xl mb-10 transition-colors duration-300"
+            className="text-4xl sm:text-5xl mb-10 transition-colors duration-300"
             style={{ fontWeight: 800, color: dark ? "#f4f4f5" : "#111827" }}
           >
             How it works
@@ -60,9 +61,9 @@ export default function HowItWorks({ dark = false }: HowItWorksProps) {
         </div>
 
         {/* Right: Mock phone/tablet frame */}
-        <div className="shrink-0 flex relative">
+        <div className="shrink-0 flex relative w-full max-w-sm lg:w-auto">
           <div
-            className="relative w-96 h-[580px] rounded-3xl overflow-hidden shadow-2xl border-4 transition-colors duration-300"
+            className="relative w-full lg:w-96 aspect-[2/3] lg:aspect-auto lg:h-[580px] rounded-3xl overflow-hidden shadow-lg border-4 transition-colors duration-300"
             style={{
               borderColor: dark ? "#2a2a2a" : "#e5e7eb",
               backgroundColor: "#1a1a1a",
@@ -74,9 +75,6 @@ export default function HowItWorks({ dark = false }: HowItWorksProps) {
               className="w-full h-full object-cover grayscale"
             />
           </div>
-
-          {/* Red glow blob top-right of frame */}
-          <div className="absolute w-32 h-32 rounded-full bg-red-300/40 blur-2xl pointer-events-none right-0 -top-8" />
         </div>
       </div>
     </section>

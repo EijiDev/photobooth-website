@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { LucideIcon } from "lucide-react";
 import { features } from "../../utils/features.constants";
 
 function useScrollReveal() {
@@ -27,7 +28,7 @@ function FeatureCard({
   dark,
   index,
 }: {
-  icon: any;
+  icon: LucideIcon;
   title: string;
   description: string;
   dark: boolean;
@@ -84,7 +85,7 @@ function FeatureCard({
 export default function Features({ dark = false }: { dark?: boolean }) {
   return (
     <section
-      className="px-10 py-20 transition-colors duration-300"
+      className="px-4 py-16 sm:px-10 sm:py-20 transition-colors duration-300"
       style={{
         fontFamily: "'Outfit', sans-serif",
         backgroundColor: dark ? "#0f0f0f" : "#f8f8f8",
@@ -93,7 +94,7 @@ export default function Features({ dark = false }: { dark?: boolean }) {
       {/* Heading */}
       <div className="text-center mb-14">
         <h2
-          className="text-5xl mb-3 transition-colors duration-300"
+          className="text-4xl sm:text-5xl mb-3 transition-colors duration-300"
           style={{
             fontWeight: 800,
             color: dark ? "#f4f4f5" : "#111827",
@@ -113,7 +114,7 @@ export default function Features({ dark = false }: { dark?: boolean }) {
       </div>
 
       {/* Cards grid */}
-      <div className="grid grid-cols-4 gap-5 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
         {features.map((f, i) => (
           <FeatureCard
             key={f.title}

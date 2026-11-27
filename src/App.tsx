@@ -1,37 +1,42 @@
 import { useState } from "react";
-import SnapBooth from "./components/pages/HeroPage";
+import HeroPage from "./components/pages/HeroPage";
 import Features from "./components/pages/Features";
 import HowItWorks from "./components/pages/Instruction";
 import SetupPage from "./components/pages/SetUpPage";
 import BoothPage from "./components/pages/BoothPage";
 import Footer from "./components/layout/Footer";
+import type { BoothConfig } from "./booth/types";
+import { DEFAULT_FRAME_ID, getFrame } from "./booth/config/frames";
 
 type Page = "home" | "setup" | "booth";
 
-interface BoothConfig {
-  mode: string;
-  grid: string;
-  frame: string;
-}
+const defaultFrame = getFrame(DEFAULT_FRAME_ID);
 
 function App() {
   const [page, setPage] = useState<Page>("home");
   const [dark, setDark] = useState(false);
   const [boothConfig, setBoothConfig] = useState<BoothConfig>({
-    mode: "photo",
-    grid: "single",
-    frame: "none",
+    frameId: defaultFrame.id,
+    count: defaultFrame.counts[0],
+    themeId: defaultFrame.defaultTheme,
   });
+
+  const go = (next: Page) => {
+    setPage(next);
+    window.scrollTo({ top: 0 });
+  };
+  const toggleDark = () => setDark((d) => !d);
 
   if (page === "setup") {
     return (
       <SetupPage
         dark={dark}
-        onToggleDark={() => setDark((d) => !d)}
-        onBack={() => setPage("home")}
+        onToggleDark={toggleDark}
+        onBack={() => go("home")}
+        initial={boothConfig}
         onOpenCamera={(config) => {
           setBoothConfig(config);
-          setPage("booth");
+          go("booth");
         }}
       />
     );
@@ -40,22 +45,19 @@ function App() {
   if (page === "booth") {
     return (
       <BoothPage
+        key={`${boothConfig.frameId}-${boothConfig.count}-${boothConfig.themeId}`}
         dark={dark}
-        onToggleDark={() => setDark((d) => !d)}
+        onToggleDark={toggleDark}
         config={boothConfig}
-        onBack={() => setPage("setup")}
-        onHome={() => setPage("home")}
+        onBack={() => go("setup")}
+        onHome={() => go("home")}
       />
     );
   }
 
   return (
     <div>
-      <SnapBooth
-        dark={dark}
-        onToggleDark={() => setDark((d) => !d)}
-        onStartBooth={() => setPage("setup")}
-      />
+      <HeroPage dark={dark} onToggleDark={toggleDark} onStartBooth={() => go("setup")} />
       <Features dark={dark} />
       <HowItWorks dark={dark} />
       <Footer dark={dark} />

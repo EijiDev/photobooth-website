@@ -1,135 +1,243 @@
-import { useEffect, useState } from "react";
-import { Camera, Heart } from "lucide-react";
+import type { CSSProperties } from "react";
+import { ArrowDown, Camera, ShieldCheck } from "lucide-react";
 import NavBar from "../layout/NavBar";
+import { LogoMark } from "../layout/Logo";
+import { BRAND } from "../../brand";
+import { FILTERS } from "../../booth/config/filters";
+import { THEMES } from "../../booth/config/themes";
+import { STICKERS } from "../../booth/config/stickers";
+import boothImage from "../../assets/booth-img.jpg";
+import catEars from "../../assets/stickers/cat-ears.svg";
+import sparkles from "../../assets/stickers/sparkles.svg";
+import heartEyes from "../../assets/stickers/props-heart-eyes.svg";
+import soCute from "../../assets/stickers/props-sign-so-cute.svg";
+import bow from "../../assets/stickers/bow.svg";
 
-interface SnapBoothProps {
+interface HeroPageProps {
   dark: boolean;
   onToggleDark: () => void;
   onStartBooth: () => void;
 }
 
-export default function SnapBooth({
-  dark,
-  onToggleDark,
-  onStartBooth,
-}: SnapBoothProps) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+/** Staggered entrance via CSS (no mount state needed). */
+const reveal = (delayMs: number): CSSProperties => ({ animationDelay: `${delayMs}ms` });
+
+/* ───────────── Hero visual: fanned photo strips, like the logo ───────────── */
+
+interface StripLook {
+  /** Strip paper (CSS background). */
+  paper: string;
+  /** CSS filter for the photos. */
+  filter: string;
+  caption: string;
+  captionColor: string;
+  captionFont: string;
+}
+
+// Each frame zooms into a different part of the photo so it reads like 4 different shots.
+const SHOTS = ["18% 46%", "52% 42%", "84% 47%", "40% 58%"];
+
+function MiniStrip({ look, className, style }: { look: StripLook; className: string; style?: CSSProperties }) {
+  return (
+    <div className={`absolute ${className}`} style={style}>
+      <div
+        className="flex w-[92px] flex-col gap-[5px] rounded-[6px] p-[6px] pb-0 min-[400px]:w-[104px] shadow-[0_6px_18px_-8px_rgba(0,0,0,0.3)] ring-1 ring-black/5 sm:w-[148px] sm:gap-2 sm:p-[10px]"
+        style={{ background: look.paper }}
+      >
+        {SHOTS.map((pos) => (
+          <div
+            key={pos}
+            className="aspect-[4/3] w-full rounded-[2px]"
+            style={{
+              backgroundImage: `url(${boothImage})`,
+              backgroundSize: "300%",
+              backgroundPosition: pos,
+              filter: look.filter,
+            }}
+          />
+        ))}
+        <div
+          className="flex h-8 items-center justify-center sm:h-11"
+          style={{ color: look.captionColor, fontFamily: look.captionFont, fontWeight: 700 }}
+        >
+          <span className="text-[13px] sm:text-[18px]">{look.caption}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const LOOKS: StripLook[] = [
+  {
+    paper: "#ffffff",
+    filter: "grayscale(1) contrast(1.2) brightness(1.05)",
+    caption: "snap snap!",
+    captionColor: "#111827",
+    captionFont: "'Outfit', sans-serif",
+  },
+  {
+    paper:
+      "linear-gradient(90deg, rgba(244,114,182,0.4) 50%, transparent 50%) 0 0 / 16px 16px, linear-gradient(rgba(244,114,182,0.4) 50%, #fff 50%) 0 0 / 16px 16px",
+    filter: "saturate(1.15) brightness(1.08) contrast(0.92)",
+    caption: "besties ♡",
+    captionColor: "#be185d",
+    captionFont: "'Caveat', cursive",
+  },
+  {
+    paper: "linear-gradient(180deg, #6b1d28, #4a121a)",
+    filter: "sepia(0.35) contrast(1.05) saturate(1.1)",
+    caption: "'26 11 27",
+    captionColor: "#ff9533",
+    captionFont: "'Share Tech Mono', monospace",
+  },
+];
+
+const FLOATERS = [
+  { src: soCute, alt: "SO CUTE sign sticker", className: "left-[0%] top-[4%] w-[104px] sm:w-[160px]", rot: -10, delay: 0 },
+  { src: heartEyes, alt: "Heart-eyes sticker", className: "right-[4%] top-[2%] w-[58px] sm:w-[78px]", rot: 12, delay: 600 },
+  { src: catEars, alt: "Cat ears sticker", className: "right-[30%] top-[-2%] w-[70px] sm:w-[96px]", rot: 8, delay: 1200 },
+  { src: sparkles, alt: "Sparkles sticker", className: "left-[6%] bottom-[10%] w-[56px] sm:w-[74px]", rot: 0, delay: 300 },
+  { src: bow, alt: "Bow sticker", className: "right-[2%] bottom-[16%] w-[60px] sm:w-[80px]", rot: -14, delay: 900 },
+];
+
+function HeroVisual() {
+  return (
+    <div className="relative mx-auto h-[370px] w-full max-w-[360px] min-[400px]:h-[410px] sm:h-[500px] sm:max-w-[520px]" aria-hidden>
+      <MiniStrip look={LOOKS[1]} className="left-[6%] top-[14%] -rotate-[12deg] sm:left-[8%]" />
+      <MiniStrip look={LOOKS[2]} className="right-[6%] top-[16%] rotate-[11deg] sm:right-[8%]" />
+      <MiniStrip look={LOOKS[0]} className="left-1/2 top-[6%] z-10 -translate-x-1/2 -rotate-[2deg]" />
+
+      {FLOATERS.map((f) => (
+        <div key={f.alt} className={`absolute z-20 ${f.className}`} style={{ transform: `rotate(${f.rot}deg)` }}>
+          <img
+            src={f.src}
+            alt=""
+            draggable={false}
+            className="animate-float w-full drop-shadow-sm"
+            style={{ animationDelay: `${f.delay}ms` }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ───────────── Page ───────────── */
+
+export default function HeroPage({ dark, onToggleDark, onStartBooth }: HeroPageProps) {
+  const text = dark ? "#f4f4f5" : "#111827";
+  const sub = dark ? "#a1a1aa" : "#6b7280";
+  const imageStickers = STICKERS.filter((s) => s.kind === "image").length;
+  const stats = [
+    { n: FILTERS.length, label: "filters" },
+    { n: THEMES.length, label: "frame designs" },
+    { n: `${imageStickers}+`, label: "stickers" },
+  ];
 
   return (
     <div
-      className="min-h-screen relative overflow-hidden transition-colors duration-300"
-      style={{
-        fontFamily: "'Outfit', sans-serif",
-        backgroundColor: dark ? "#0f0f0f" : "#f8f8f8",
-      }}
+      className="relative min-h-[100dvh] overflow-hidden transition-colors duration-300"
+      style={{ fontFamily: "'Outfit', sans-serif", backgroundColor: dark ? "#0f0f0f" : "#f8f8f8" }}
     >
-      {/* Background blobs */}
-      <div
-        className="absolute top-16 left-8 w-52 h-52 rounded-full blur-3xl pointer-events-none transition-colors duration-300"
-        style={{
-          backgroundColor: dark
-            ? "rgba(220,38,38,0.12)"
-            : "rgba(254,202,202,0.5)",
-        }}
-      />
-      <div
-        className="absolute bottom-16 right-8 w-72 h-72 rounded-full blur-3xl pointer-events-none transition-colors duration-300"
-        style={{
-          backgroundColor: dark
-            ? "rgba(220,38,38,0.15)"
-            : "rgba(252,165,165,0.25)",
-        }}
-      />
+      <NavBar dark={dark} onToggleDark={onToggleDark} onStartBooth={onStartBooth} />
 
-      <NavBar
-        dark={dark}
-        onToggleDark={onToggleDark}
-        onStartBooth={onStartBooth}
-      />
-
-      <main className="flex flex-col items-center justify-center text-center pt-20 pb-32 px-6 relative z-10">
-        {/* Badge */}
-        <div
-          className="inline-flex items-center gap-2 border text-sm px-5 py-2 rounded-full mb-8 transition-all duration-700"
-          style={{
-            fontWeight: 500,
-            border: `1px solid ${dark ? "#3f1a1a" : "#fca5a5"}`,
-            backgroundColor: dark ? "#1a0a0a" : "#fff1f2",
-            color: dark ? "#f87171" : "#dc2626",
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(24px)",
-            transitionDelay: "0ms",
-          }}
-        >
-        </div>
-
-        {/* Headline */}
-        <h1
-          className="text-7xl leading-tight tracking-tight mb-1 transition-all duration-700"
-          style={{
-            fontWeight: 800,
-            color: dark ? "#f4f4f5" : "#111827",
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(24px)",
-            transitionDelay: "100ms",
-          }}
-        >
-          Your personal
-        </h1>
-        <h1
-          className="text-7xl leading-tight tracking-tight mb-8 transition-all duration-700"
-          style={{
-            fontWeight: 800,
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(24px)",
-            transitionDelay: "200ms",
-          }}
-        >
-          <span
+      <main className="relative z-10 mx-auto grid max-w-6xl items-center gap-6 px-6 pb-20 pt-8 sm:pt-14 lg:grid-cols-[1.05fr_1fr] lg:gap-6 lg:pb-28 lg:pt-16">
+        {/* Copy */}
+        <section className="flex flex-col items-center text-center lg:items-start lg:text-left">
+          <div
+            className="animate-fade-up mb-6 inline-flex items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-4 text-sm"
             style={{
-              background: `linear-gradient(to right, #dc2626 0%, #fca5a5 40%, transparent 100%)`,
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
+              ...reveal(0),
+              fontWeight: 600,
+              borderColor: dark ? "#2a2a2a" : "#e5e7eb",
+              backgroundColor: dark ? "#161616" : "#ffffff",
+              color: dark ? "#d4d4d8" : "#374151",
             }}
           >
-            pocket photobooth
-          </span>
-        </h1>
+            <span className="flex h-7 w-7 items-center justify-center rounded-full" style={{ backgroundColor: dark ? "#ffffff" : "#f3f4f6" }}>
+              <LogoMark size={22} />
+            </span>
+            Your pocket photobooth
+          </div>
 
-        {/* Subtext */}
-        <p
-          className="max-w-xl text-base leading-relaxed mb-12 transition-all duration-700"
-          style={{
-            fontWeight: 300,
-            color: dark ? "#71717a" : "#6b7280",
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(24px)",
-            transitionDelay: "300ms",
-          }}
-        >
-          Step inside SnapBooth. No apps, no signups just instant, beautiful
-          memories with live filters, photo strips, and looping boomerangs right
-          from your browser.
-        </p>
+          <h1
+            className="animate-fade-up text-5xl leading-[1.02] tracking-tight sm:text-7xl"
+            style={{ ...reveal(100), fontWeight: 800, color: text }}
+          >
+            Strike a pose.
+            <br />
+            <span className="text-red-600">
+              Do it{" "}
+              <span className="relative inline-block" style={{ fontFamily: "'Caveat', cursive", fontWeight: 700 }}>
+                <span className="relative z-10 text-[1.15em]">again.</span>
+                {/* hand-drawn underline */}
+                <svg
+                  viewBox="0 0 200 20"
+                  preserveAspectRatio="none"
+                  className="absolute -bottom-1 left-0 h-[0.28em] w-full"
+                  aria-hidden
+                >
+                  <path d="M4 14 Q50 4 100 11 T196 8" fill="none" stroke="#dc2626" strokeOpacity="0.28" strokeWidth="5" strokeLinecap="round" />
+                </svg>
+              </span>
+            </span>
+          </h1>
 
-        {/* CTA */}
-        <button
-          onClick={onStartBooth}
-          className="inline-flex items-center gap-3 bg-red-600 hover:bg-red-700 active:scale-95 transition-all duration-700 text-white text-base px-9 py-4 rounded-full shadow-md"
-          style={{
-            fontWeight: 700,
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(24px)",
-            transitionDelay: "400ms",
-          }}
-        >
-          <Camera size={18} strokeWidth={2.5} />
-          Start Photo Booth
-        </button>
+          <p
+            className="animate-fade-up mt-6 max-w-md text-base leading-relaxed sm:text-lg"
+            style={{ ...reveal(200), fontWeight: 300, color: sub }}
+          >
+            {BRAND.name} turns your phone or laptop into a Korean-style photobooth. Pick a strip, snap your
+            barkada or your special someone, then decorate with filters, frames and cute stickers.
+          </p>
+
+          <div
+            className="animate-fade-up mt-8 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row"
+            style={reveal(300)}
+          >
+            <button
+              type="button"
+              onClick={onStartBooth}
+              className="inline-flex w-full items-center justify-center gap-3 rounded-full bg-red-600 px-9 py-4 text-base text-white shadow-sm transition-colors hover:bg-red-700 active:scale-95 sm:w-auto"
+              style={{ fontWeight: 700 }}
+            >
+              <Camera size={18} strokeWidth={2.5} />
+              Start Photo Booth
+            </button>
+            <a
+              href="#how-it-works"
+              className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm transition-colors hover:text-red-600"
+              style={{ color: sub, fontWeight: 600 }}
+            >
+              How it works <ArrowDown size={15} />
+            </a>
+          </div>
+
+          {/* Live numbers straight from the configs */}
+          <div
+            className="animate-fade-up mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 lg:justify-start"
+            style={reveal(400)}
+          >
+            {stats.map((s) => (
+              <div key={s.label} className="flex items-baseline gap-1.5">
+                <span className="text-2xl tabular-nums" style={{ fontWeight: 800, color: text }}>
+                  {s.n}
+                </span>
+                <span className="text-sm" style={{ color: sub }}>
+                  {s.label}
+                </span>
+              </div>
+            ))}
+            <div className="flex items-center gap-1.5 text-sm" style={{ color: sub }}>
+              <ShieldCheck size={16} className="text-red-600" /> 100% private
+            </div>
+          </div>
+        </section>
+
+        {/* Visual */}
+        <section className="animate-fade-up mt-4 lg:mt-0" style={reveal(350)}>
+          <HeroVisual />
+        </section>
       </main>
     </div>
   );

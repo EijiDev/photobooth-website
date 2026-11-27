@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Camera, Sun, Moon } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
+import Logo from "./Logo";
 
 interface NavBarProps {
   dark: boolean;
@@ -11,38 +11,33 @@ interface NavBarProps {
 export default function NavBar({ dark, onToggleDark, onStartBooth, onLogoClick }: NavBarProps) {
   return (
     <header
-      className="flex items-center justify-between px-10 py-4 relative z-10 transition-colors duration-300"
+      className="relative z-10 flex items-center justify-between px-4 py-4 transition-colors duration-300 sm:px-10"
       style={{ borderBottom: `1px solid ${dark ? "#1f1f1f" : "#f3f4f6"}` }}
     >
-      <div
-        className="flex items-center gap-2 text-red-600 text-base tracking-tight cursor-pointer select-none"
-        style={{ fontWeight: 700 }}
-        onClick={onLogoClick}
-      >
-        <Camera size={18} strokeWidth={2.5} />
-        <span>SnapBooth</span>
-      </div>
-      <div className="flex items-center gap-4">
+      <button type="button" onClick={onLogoClick} className="transition-transform hover:-rotate-2 active:scale-95">
+        <Logo size={30} dark={dark} />
+      </button>
+      <div className="flex items-center gap-3 sm:gap-4">
         <button
+          type="button"
           onClick={onToggleDark}
+          aria-label="Toggle dark mode"
           className="transition-colors duration-200"
           style={{ color: dark ? "#a1a1aa" : "#9ca3af" }}
         >
           {dark ? <Moon size={18} strokeWidth={1.5} /> : <Sun size={18} strokeWidth={1.5} />}
         </button>
-        <button
-          onClick={onStartBooth}
-          className="bg-red-600 hover:bg-red-700 transition-colors text-white text-sm px-6 py-2.5 rounded-full"
-          style={{ fontWeight: 700 }}
-        >
-          Start Booth
-        </button>
+        {onStartBooth && (
+          <button
+            type="button"
+            onClick={onStartBooth}
+            className="rounded-full bg-red-600 px-5 py-2.5 text-sm text-white transition-colors hover:bg-red-700 sm:px-6"
+            style={{ fontWeight: 700 }}
+          >
+            Start Booth
+          </button>
+        )}
       </div>
     </header>
   );
-}
-
-export function useNavBar() {
-  const [dark, setDark] = useState(false);
-  return { dark, toggleDark: () => setDark((d) => !d) };
 }

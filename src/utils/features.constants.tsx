@@ -1,24 +1,24 @@
-import { Camera, Sparkles, Image, Zap } from "lucide-react";
+import { Camera, Sparkles, Image, Heart } from "lucide-react";
 
 export const features = [
   {
     icon: Camera,
     title: "Browser Based",
-    description: "No apps to download. Works instantly in any modern browser.",
+    description: "No apps, no uploads. Everything runs privately on your device."
   },
   {
     icon: Sparkles,
     title: "Live Filters",
-    description: "Beautiful, real-time filters to give your photos that perfect vibe.",
+    description: "12 trendy looks — Korean clean, disposable, Y2K, VHS and more — live on camera.",
   },
   {
     icon: Image,
     title: "Photo Strips",
-    description: "Classic 3-photo strips, just like the vintage booths.",
+    description: "4-cut strips, Korean 6-cuts, polaroids, film strips and barkada collages.",
   },
   {
-    icon: Zap,
-    title: "Boomerangs",
-    description: "Create fun looping animations instantly.",
+    icon: Heart,
+    title: "Stickers & Text",
+    description: "Hearts, bows, bff stickers, cute captions and retro date stamps.",
   },
 ];

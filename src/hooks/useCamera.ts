@@ -1,44 +1,87 @@
-import { useRef, useEffect } from "react";
-import { filters } from "../utils/booth.constants";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createCanvas, ctx2d } from "../booth/render/canvas";
 
-export function useCamera(activeFilter: number) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+export type Facing = "user" | "environment";
+
+function cameraErrorMessage(err: unknown): string {
+  if (!window.isSecureContext) {
+    return "The camera only works over HTTPS (or on localhost). Open the site with https:// to take photos.";
+  }
+  const name = err instanceof DOMException ? err.name : "";
+  if (name === "NotAllowedError")
+    return "Camera access was blocked. Allow camera permission in your browser settings, then reload.";
+  if (name === "NotFoundError" || name === "OverconstrainedError")
+    return "No camera was found on this device.";
+  if (name === "NotReadableError")
+    return "Your camera is being used by another app. Close it and try again.";
+  return "Couldn't start the camera. Please reload and try again.";
+}
+
+/**
+ * Starts the camera while `active` is true and stops every track when it turns
+ * false or the component unmounts. Safe under React StrictMode: a stream that
+ * arrives after cleanup is stopped right away, so the camera light doesn't stay on.
+ */
+export function useCamera(active: boolean, facing: Facing) {
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
-    startCamera();
+    if (!active) return;
+    let cancelled = false;
+    let current: MediaStream | null = null;
+
+    const request = navigator.mediaDevices?.getUserMedia
+      ? navigator.mediaDevices.getUserMedia({
+          video: { facingMode: facing, width: { ideal: 1920 }, height: { ideal: 1080 } },
+          audio: false,
+        })
+      : Promise.reject(new Error("getUserMedia unavailable"));
+
+    request
+      .then((s) => {
+        if (cancelled) {
+          s.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        current = s;
+        setStream(s);
+        setError(null);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(cameraErrorMessage(err));
+      });
+
     return () => {
-      if (videoRef.current?.srcObject) {
-        (videoRef.current.srcObject as MediaStream)
-          .getTracks()
-          .forEach((t) => t.stop());
-      }
+      cancelled = true;
+      current?.getTracks().forEach((t) => t.stop());
     };
+  }, [active, facing]);
+
+  /** Pass to the <video> that should be used for captures. */
+  const attachVideo = useCallback((el: HTMLVideoElement | null) => {
+    videoRef.current = el;
   }, []);
 
-  const startCamera = async () => {
-    try {
-      const s = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: 1280, height: 720 },
-      });
-      if (videoRef.current) videoRef.current.srcObject = s;
-    } catch (err) {
-      console.error(err);
+  const mirror = facing === "user";
+
+  /** Grabs the current frame at full resolution (mirrored for selfies, like the preview). */
+  const capture = useCallback((): HTMLCanvasElement | null => {
+    const video = videoRef.current;
+    if (!video || video.readyState < 2 || !video.videoWidth) return null;
+    const c = createCanvas(video.videoWidth, video.videoHeight);
+    const ctx = ctx2d(c);
+    if (mirror) {
+      ctx.translate(c.width, 0);
+      ctx.scale(-1, 1);
     }
-  };
-
-  const captureFrame = (): string => {
-    const video = videoRef.current!;
-    const canvas = canvasRef.current!;
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-    const ctx = canvas.getContext("2d")!;
-    ctx.filter = filters[activeFilter].style;
-    ctx.translate(canvas.width, 0);
-    ctx.scale(-1, 1);
     ctx.drawImage(video, 0, 0);
-    return canvas.toDataURL("image/png");
-  };
+    return c;
+  }, [mirror]);
 
-  return { videoRef, canvasRef, captureFrame };
+  const getVideo = useCallback(() => videoRef.current, []);
+
+  const live = active && stream?.active ? stream : null;
+  return { stream: live, error: active ? error : null, attachVideo, capture, getVideo, mirror };
 }
