@@ -22,6 +22,23 @@ export function downloadBlob(blob: Blob, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
+/** iPhone / iPad (iPadOS reports itself as a Mac with touch). */
+export function isIOSDevice(): boolean {
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.userAgent.includes("Macintosh") && navigator.maxTouchPoints > 1)
+  );
+}
+
+/** Can this browser share image files (false in most in-app browsers)? */
+export function canShareFiles(): boolean {
+  try {
+    return !!navigator.canShare?.({ files: [new File([""], "x.png", { type: "image/png" })] });
+  } catch {
+    return false;
+  }
+}
+
 export type ShareResult = "shared" | "cancelled" | "unsupported";
 
 /** Uses the native share sheet (Messenger, IG, etc. on phones) when files can be shared. */
@@ -29,7 +46,8 @@ export async function shareBlob(blob: Blob, filename: string): Promise<ShareResu
   const file = new File([blob], filename, { type: "image/png" });
   if (!navigator.canShare?.({ files: [file] })) return "unsupported";
   try {
-    await navigator.share({ files: [file], title: BRAND.name });
+    // Files only: on iPhone, adding a title/text can hide the "Save Image" option.
+    await navigator.share({ files: [file] });
     return "shared";
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") return "cancelled";

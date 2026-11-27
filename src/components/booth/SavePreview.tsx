@@ -1,5 +1,6 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { Download, Hand, X } from "lucide-react";
+import { isIOSDevice } from "../../booth/render/export";
 
 interface SavePreviewProps {
   blob: Blob;
@@ -7,9 +8,6 @@ interface SavePreviewProps {
   onClose: () => void;
 }
 
-const isIOS = () =>
-  /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-  (navigator.userAgent.includes("Macintosh") && navigator.maxTouchPoints > 1);
 
 /**
  * Fallback for phones when the share sheet isn't available (in-app browsers,
@@ -19,7 +17,7 @@ const isIOS = () =>
  */
 export default function SavePreview({ blob, filename, onClose }: SavePreviewProps) {
   const [url, setUrl] = useState<string | null>(null);
-  const ios = isIOS();
+  const ios = isIOSDevice();
 
   useEffect(() => {
     const u = URL.createObjectURL(blob);

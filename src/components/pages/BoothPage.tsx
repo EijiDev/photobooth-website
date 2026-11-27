@@ -26,7 +26,14 @@ import { formatDateStamp } from "../../booth/render/layers";
 import { makeThumb } from "../../booth/render/renderLook";
 import { composeDesign, looksBlank } from "../../booth/render/compose";
 import { createCanvas } from "../../booth/render/canvas";
-import { canvasToBlob, downloadBlob, exportFilename, shareBlob } from "../../booth/render/export";
+import {
+  canShareFiles,
+  canvasToBlob,
+  downloadBlob,
+  exportFilename,
+  isIOSDevice,
+  shareBlob,
+} from "../../booth/render/export";
 import { boothPalette, type BoothPalette } from "../../booth/ui";
 import { useCamera, type Facing } from "../../hooks/useCamera";
 import { useBoothSession } from "../../hooks/useBoothSession";
@@ -117,6 +124,7 @@ export default function BoothPage({ dark, onToggleDark, config, onBack, onHome }
   /** Phones: PNG rendered ahead of time, so the share sheet opens instantly on tap. */
   const [prepared, setPrepared] = useState<{ blob: Blob; source: unknown } | null>(null);
   const isPhone = useMediaQuery("(pointer: coarse)");
+  const [ios] = useState(isIOSDevice);
 
   const camera = useCamera(phase === "shoot", facing);
   const session = useBoothSession(totalShots, camera.capture);
@@ -310,31 +318,87 @@ export default function BoothPage({ dark, onToggleDark, config, onBack, onHome }
     }
   };
 
-  /** Phones (Save to Photos) and Share: native share sheet, with a long-press fallback. */
-  const onShareSheet = async (kind: "download" | "share") => {
-    // Only use the pre-rendered PNG if it matches the current design.
+  /**
+   * Phones — "Save to Photos".
+   * Websites can't write into the Photos app directly (only native apps can), so:
+   *  - Android: a plain download lands in Gallery / Google Photos → 1 tap.
+   *  - iPhone: share sheet → "Save Image" → 2 taps (the shortest path iOS allows).
+   *  - In-app browsers (Messenger, IG) can't share files → long-press preview.
+   */
+  const onSavePhone = async () => {
     const fresh = prepared && prepared.source === buildPng ? prepared.blob : null;
-    if (fresh) {
+
+    if (!ios) {
+      setExporting("download");
       try {
-        const result = await shareBlob(fresh, exportFilename());
-        if (result !== "unsupported") return; // shared or cancelled by the user
+        downloadBlob(fresh ?? (await buildPng()), exportFilename());
+        setToast("Saved! Find it in your Gallery (Downloads).");
       } catch {
-        /* e.g. NotAllowedError — fall through to the long-press preview */
+        setToast("Couldn't save — please try again.");
+      } finally {
+        setExporting(null);
       }
+      return;
     }
-    setExporting(kind);
+
+    if (!canShareFiles()) {
+      setExporting("download");
+      try {
+        setSaveFallback(fresh ?? (await buildPng()));
+      } catch {
+        setToast("Couldn't save — please try again.");
+      } finally {
+        setExporting(null);
+      }
+      return;
+    }
+
+    // Ready PNG → open the share sheet immediately (iOS needs it right after the tap).
+    if (fresh) {
+      shareBlob(fresh, exportFilename()).catch(() => setToast("Couldn't open the share sheet — please try again."));
+      return;
+    }
+    setExporting("download");
+    try {
+      const blob = await buildPng();
+      setPrepared({ blob, source: buildPng });
+      try {
+        await shareBlob(blob, exportFilename());
+      } catch {
+        // Safari may refuse after the wait — the photo is ready now, so one more tap works.
+        setToast("Your photo is ready — tap Save to Photos again.");
+      }
+    } catch {
+      setToast("Couldn't save — please try again.");
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  /** "Share" (any device): share sheet → Messenger, IG, etc. */
+  const onShare = async () => {
+    const fresh = prepared && prepared.source === buildPng ? prepared.blob : null;
+    if (fresh && canShareFiles()) {
+      shareBlob(fresh, exportFilename()).catch(() => setToast("Couldn't open the share sheet — please try again."));
+      return;
+    }
+    setExporting("share");
     try {
       const blob = fresh ?? (await buildPng());
-      if (!fresh && !isPhone) {
-        // Desktop "Share": try the share sheet, else download.
-        const result = await shareBlob(blob, exportFilename()).catch(() => "unsupported" as const);
-        if (result === "unsupported") {
+      setPrepared({ blob, source: buildPng });
+      if (!canShareFiles()) {
+        if (isPhone) setSaveFallback(blob);
+        else {
           downloadBlob(blob, exportFilename());
           setToast("Sharing isn't supported here, so we downloaded it instead.");
         }
         return;
       }
-      setSaveFallback(blob);
+      try {
+        await shareBlob(blob, exportFilename());
+      } catch {
+        setToast("Your photo is ready — tap Share again.");
+      }
     } catch {
       setToast("Couldn't export — please try again.");
     } finally {
@@ -635,17 +699,17 @@ export default function BoothPage({ dark, onToggleDark, config, onBack, onHome }
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => (isPhone ? onShareSheet("download") : onDownload())}
+                  onClick={() => (isPhone ? onSavePhone() : onDownload())}
                   disabled={!ready || exporting !== null}
                   className="flex min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-red-600 py-3 text-sm text-white shadow-md transition-all hover:bg-red-700 active:scale-95 disabled:opacity-50"
                   style={{ fontWeight: 700 }}
                 >
                   {exporting === "download" ? <LoaderCircle size={17} className="animate-spin" /> : <Download size={17} />}
-                  <span className="truncate">{isPhone ? "Save to Photos" : "Download PNG"}</span>
+                  <span className="truncate">{isPhone ? (ios ? "Save to Photos" : "Save to Gallery") : "Download PNG"}</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => onShareSheet("share")}
+                  onClick={onShare}
                   disabled={!ready || exporting !== null}
                   className="flex shrink-0 items-center justify-center gap-2 rounded-full border px-4 py-3 text-sm text-red-600 dark:text-red-400 transition-all hover:bg-red-50 active:scale-95 disabled:opacity-50 sm:px-5"
                   style={{ borderColor: "#7a1f2b", fontWeight: 700 }}
