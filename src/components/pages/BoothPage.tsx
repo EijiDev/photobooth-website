@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   ArrowLeft,
   Camera,
@@ -38,6 +38,7 @@ import { BRAND } from "../../brand";
 import FilterPicker from "../booth/FilterPicker";
 import StripEditor from "../booth/StripEditor";
 import EditPanel from "../booth/EditPanel";
+import SavePreview from "../booth/SavePreview";
 
 interface BoothPageProps {
   dark: boolean;
@@ -110,6 +111,11 @@ export default function BoothPage({ dark, onToggleDark, config, onBack, onHome }
   const [liveThumb, setLiveThumb] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [exporting, setExporting] = useState<"download" | "share" | null>(null);
+  /** Phone fallback: full-screen photo to long-press → Save to Photos. */
+  const [saveFallback, setSaveFallback] = useState<Blob | null>(null);
+  /** Phones: PNG rendered ahead of time, so the share sheet opens instantly on tap. */
+  const [prepared, setPrepared] = useState<{ blob: Blob; source: unknown } | null>(null);
+  const isPhone = useMediaQuery("(pointer: coarse)");
 
   const camera = useCamera(phase === "shoot", facing);
   const session = useBoothSession(totalShots, camera.capture);
@@ -254,7 +260,7 @@ export default function BoothPage({ dark, onToggleDark, config, onBack, onHome }
     processed.canvases.length === totalShots &&
     processed.canvases.every(Boolean);
 
-  const buildPng = async () => {
+  const buildPng = useCallback(async () => {
     await Promise.all([ensureFonts(), preloadStickerImages(stickers)]);
     // Render on a fresh CPU-backed canvas; verify it isn't blank and retry once if it is.
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -268,13 +274,34 @@ export default function BoothPage({ dark, onToggleDark, config, onBack, onHome }
       if (!looksBlank(canvas)) return canvasToBlob(canvas);
     }
     throw new Error("Export produced a blank image");
-  };
+  }, [design, layout, processed.canvases, stickers, sessionDate]);
 
+  /*
+   * Phones: browsers can't write straight into Photos/Gallery, but the share
+   * sheet can ("Save Image" on iPhone, "Save to gallery"/Photos on Android).
+   * iOS only opens it right after a tap, so the PNG is rendered in the
+   * background while the user edits and is ready the moment they tap Save.
+   */
+  useEffect(() => {
+    if (!isPhone || phase !== "edit" || !ready) return;
+    let cancelled = false;
+    const t = setTimeout(() => {
+      buildPng()
+        .then((blob) => !cancelled && setPrepared({ blob, source: buildPng }))
+        .catch(() => {});
+    }, 600);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [isPhone, phase, ready, buildPng]);
+
+  /** Desktop: regular file download. */
   const onDownload = async () => {
     setExporting("download");
     try {
       downloadBlob(await buildPng(), exportFilename());
-      setToast("Saved to your device!");
+      setToast("Downloaded! Check your Downloads folder.");
     } catch {
       setToast("Couldn't export — please try again.");
     } finally {
@@ -282,17 +309,33 @@ export default function BoothPage({ dark, onToggleDark, config, onBack, onHome }
     }
   };
 
-  const onShare = async () => {
-    setExporting("share");
-    try {
-      const blob = await buildPng();
-      const result = await shareBlob(blob, exportFilename());
-      if (result === "unsupported") {
-        downloadBlob(blob, exportFilename());
-        setToast("Sharing isn't supported here, so we downloaded it instead.");
+  /** Phones (Save to Photos) and Share: native share sheet, with a long-press fallback. */
+  const onShareSheet = async (kind: "download" | "share") => {
+    // Only use the pre-rendered PNG if it matches the current design.
+    const fresh = prepared && prepared.source === buildPng ? prepared.blob : null;
+    if (fresh) {
+      try {
+        const result = await shareBlob(fresh, exportFilename());
+        if (result !== "unsupported") return; // shared or cancelled by the user
+      } catch {
+        /* e.g. NotAllowedError — fall through to the long-press preview */
       }
+    }
+    setExporting(kind);
+    try {
+      const blob = fresh ?? (await buildPng());
+      if (!fresh && !isPhone) {
+        // Desktop "Share": try the share sheet, else download.
+        const result = await shareBlob(blob, exportFilename()).catch(() => "unsupported" as const);
+        if (result === "unsupported") {
+          downloadBlob(blob, exportFilename());
+          setToast("Sharing isn't supported here, so we downloaded it instead.");
+        }
+        return;
+      }
+      setSaveFallback(blob);
     } catch {
-      setToast("Couldn't share — please try again.");
+      setToast("Couldn't export — please try again.");
     } finally {
       setExporting(null);
     }
@@ -591,17 +634,17 @@ export default function BoothPage({ dark, onToggleDark, config, onBack, onHome }
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={onDownload}
+                  onClick={() => (isPhone ? onShareSheet("download") : onDownload())}
                   disabled={!ready || exporting !== null}
                   className="flex min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-red-600 py-3 text-sm text-white shadow-md transition-all hover:bg-red-700 active:scale-95 disabled:opacity-50"
                   style={{ fontWeight: 700 }}
                 >
                   {exporting === "download" ? <LoaderCircle size={17} className="animate-spin" /> : <Download size={17} />}
-                  <span className="truncate">Download PNG</span>
+                  <span className="truncate">{isPhone ? "Save to Photos" : "Download PNG"}</span>
                 </button>
                 <button
                   type="button"
-                  onClick={onShare}
+                  onClick={() => onShareSheet("share")}
                   disabled={!ready || exporting !== null}
                   className="flex shrink-0 items-center justify-center gap-2 rounded-full border px-4 py-3 text-sm text-red-600 dark:text-red-400 transition-all hover:bg-red-50 active:scale-95 disabled:opacity-50 sm:px-5"
                   style={{ borderColor: "#7a1f2b", fontWeight: 700 }}
@@ -619,6 +662,11 @@ export default function BoothPage({ dark, onToggleDark, config, onBack, onHome }
       {/* Camera flash */}
       {session.flashKey > 0 && (
         <div key={session.flashKey} className="animate-flash pointer-events-none fixed inset-0 z-50 bg-white" />
+      )}
+
+      {/* Phone fallback: long-press to save */}
+      {saveFallback && (
+        <SavePreview blob={saveFallback} filename={exportFilename()} onClose={() => setSaveFallback(null)} />
       )}
 
       {/* Toast */}
