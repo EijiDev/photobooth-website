@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import HeroPage from "./components/pages/HeroPage";
 import Features from "./components/pages/Features";
 import HowItWorks from "./components/pages/Instruction";
@@ -20,6 +20,11 @@ function App() {
     count: defaultFrame.counts[0],
     themeId: defaultFrame.defaultTheme,
   });
+
+  // Lets Tailwind `dark:` utilities follow the in-app toggle.
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+  }, [dark]);
 
   const go = (next: Page) => {
     setPage(next);

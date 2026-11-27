@@ -50,7 +50,7 @@ function FeatureCard({
       {/* Icon box */}
       <div
         className="w-12 h-12 rounded-xl flex items-center justify-center mb-8 transition-colors duration-300"
-        style={{ backgroundColor: dark ? "#1a0a0a" : "#fff1f2" }}
+        style={{ backgroundColor: dark ? "#1d0f11" : "#f8eef0" }}
       >
         <Icon size={20} strokeWidth={1.75} className="text-red-500" />
       </div>

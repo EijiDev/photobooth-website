@@ -79,7 +79,7 @@ export default function StripEditor({
         />
       )}
       {busy && (
-        <div className="pointer-events-none absolute right-2 top-2 rounded-full bg-white/85 px-2.5 py-1 text-[11px] font-semibold text-red-600 shadow">
+        <div className="pointer-events-none absolute right-2 top-2 rounded-full bg-white/85 px-2.5 py-1 text-[11px] font-semibold text-red-600 dark:text-red-400 shadow">
           applying filter…
         </div>
       )}

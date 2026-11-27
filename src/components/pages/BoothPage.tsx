@@ -474,7 +474,7 @@ export default function BoothPage({ dark, onToggleDark, config, onBack, onHome }
                   className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs transition-all disabled:opacity-50 sm:text-sm"
                   style={{
                     fontWeight: 600,
-                    backgroundColor: timer === t ? (t === 0 ? "#dc2626" : p.text) : "transparent",
+                    backgroundColor: timer === t ? (t === 0 ? "#7a1f2b" : p.text) : "transparent",
                     color: timer === t ? "#ffffff" : p.text,
                   }}
                 >
@@ -603,8 +603,8 @@ export default function BoothPage({ dark, onToggleDark, config, onBack, onHome }
                   type="button"
                   onClick={onShare}
                   disabled={!ready || exporting !== null}
-                  className="flex shrink-0 items-center justify-center gap-2 rounded-full border px-4 py-3 text-sm text-red-600 transition-all hover:bg-red-50 active:scale-95 disabled:opacity-50 sm:px-5"
-                  style={{ borderColor: "#dc2626", fontWeight: 700 }}
+                  className="flex shrink-0 items-center justify-center gap-2 rounded-full border px-4 py-3 text-sm text-red-600 dark:text-red-400 transition-all hover:bg-red-50 active:scale-95 disabled:opacity-50 sm:px-5"
+                  style={{ borderColor: "#7a1f2b", fontWeight: 700 }}
                   aria-label="Share"
                 >
                   {exporting === "share" ? <LoaderCircle size={17} className="animate-spin" /> : <Share2 size={17} />}
@@ -655,7 +655,7 @@ function StepPill({
     <span className="flex items-center gap-1.5 text-xs" style={{ fontWeight: 600, color: active ? p.text : p.sub }}>
       <span
         className="flex h-6 w-6 items-center justify-center rounded-full text-[11px] text-white transition-colors"
-        style={{ backgroundColor: active || done ? "#dc2626" : p.sub, fontWeight: 700 }}
+        style={{ backgroundColor: active || done ? "#7a1f2b" : p.sub, fontWeight: 700 }}
       >
         {done ? <Check size={12} strokeWidth={3} /> : n}
       </span>
@@ -704,7 +704,7 @@ function ShotTray({
             onClick={() => onRetake(i)}
             className="group relative h-12 w-12 overflow-hidden rounded-xl border-2 transition-all disabled:cursor-default"
             style={{
-              borderColor: active ? "#dc2626" : src ? "transparent" : p.border,
+              borderColor: active ? "#7a1f2b" : src ? "transparent" : p.border,
               borderStyle: src || active ? "solid" : "dashed",
               backgroundColor: p.panel,
               transform: active ? "translateY(-2px)" : undefined,
@@ -726,7 +726,7 @@ function ShotTray({
                 )}
               </>
             ) : (
-              <span className="text-xs" style={{ color: active ? "#dc2626" : p.sub, fontWeight: 700 }}>
+              <span className="text-xs" style={{ color: active ? "#7a1f2b" : p.sub, fontWeight: 700 }}>
                 {i + 1}
               </span>
             )}
@@ -764,7 +764,7 @@ function ShutterButton({
           cy="46"
           r={R}
           fill="none"
-          stroke="#dc2626"
+          stroke="#7a1f2b"
           strokeWidth="4"
           strokeLinecap="round"
           strokeDasharray={C}

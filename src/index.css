@@ -1,5 +1,23 @@
 @import "tailwindcss";
 
+/* Dark mode follows the app toggle (App.tsx puts .dark on <html>). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Brand colour: every `red-*` utility is our dark maroon scale. */
+@theme {
+  --color-red-50: #fbf3f4;
+  --color-red-100: #f6e4e7;
+  --color-red-200: #edc9cf;
+  --color-red-300: #dfa2ac;
+  --color-red-400: #c96e7d;
+  --color-red-500: #94293a;
+  --color-red-600: #7a1f2b;
+  --color-red-700: #651824;
+  --color-red-800: #52141e;
+  --color-red-900: #43111a;
+  --color-red-950: #26080d;
+}
+
 /* ── Playful micro-animations (used as animate-pop, animate-flash, …) ── */
 @theme {
   --animate-pop: pop 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
@@ -82,7 +100,7 @@ body {
   appearance: none;
   height: 6px;
   border-radius: 999px;
-  background: var(--track, #fef2f2);
+  background: var(--track, #f8eef0);
   outline: none;
 }
 .booth-range::-webkit-slider-thumb {
@@ -90,7 +108,7 @@ body {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--accent, #dc2626);
+  background: var(--accent, #7a1f2b);
   border: 3px solid #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
   cursor: pointer;
@@ -103,7 +121,7 @@ body {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: var(--accent, #dc2626);
+  background: var(--accent, #7a1f2b);
   border: 3px solid #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
   cursor: pointer;

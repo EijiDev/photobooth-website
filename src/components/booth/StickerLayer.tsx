@@ -117,7 +117,7 @@ function StickerItem({
     >
       <div
         className="animate-sticker-in rounded-lg p-1"
-        style={{ outline: selected ? "2px dashed rgba(220,38,38,0.9)" : "none", outlineOffset: 2 }}
+        style={{ outline: selected ? "2px dashed rgba(122,31,43,0.9)" : "none", outlineOffset: 2 }}
       >
         <StickerGlyph def={def} size={sticker.size * k} />
       </div>
@@ -127,7 +127,7 @@ function StickerItem({
           <button
             type="button"
             aria-label="Remove sticker"
-            className="absolute -left-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-red-600 shadow-md"
+            className="absolute -left-3 -top-3 flex h-7 w-7 items-center justify-center rounded-full bg-white text-red-600 dark:text-red-400 shadow-md"
             onPointerDown={(e) => e.stopPropagation()}
             onClick={() => onRemove(sticker.uid)}
           >

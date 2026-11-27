@@ -1,12 +1,20 @@
 import type { CSSProperties } from "react";
-import { ArrowDown, Camera, ShieldCheck } from "lucide-react";
+import { ArrowDown, Camera } from "lucide-react";
 import NavBar from "../layout/NavBar";
 import { LogoMark } from "../layout/Logo";
 import { BRAND } from "../../brand";
-import { FILTERS } from "../../booth/config/filters";
-import { THEMES } from "../../booth/config/themes";
-import { STICKERS } from "../../booth/config/stickers";
-import boothImage from "../../assets/booth-img.jpg";
+// Emoji "poses" shown inside the hero strips (no real photos).
+import pGrin from "../../assets/stickers/props-grin.svg";
+import pWink from "../../assets/stickers/props-wink-tongue.svg";
+import pCool from "../../assets/stickers/props-cool.svg";
+import pKiss from "../../assets/stickers/props-kiss.svg";
+import pLaugh from "../../assets/stickers/props-laugh.svg";
+import pAngel from "../../assets/stickers/props-angel.svg";
+import pWow from "../../assets/stickers/props-wow.svg";
+import bunny from "../../assets/stickers/bunny.svg";
+import cat from "../../assets/stickers/cat.svg";
+import bear from "../../assets/stickers/bear.svg";
+import chick from "../../assets/stickers/chick.svg";
 import catEars from "../../assets/stickers/cat-ears.svg";
 import sparkles from "../../assets/stickers/sparkles.svg";
 import heartEyes from "../../assets/stickers/props-heart-eyes.svg";
@@ -27,15 +35,15 @@ const reveal = (delayMs: number): CSSProperties => ({ animationDelay: `${delayMs
 interface StripLook {
   /** Strip paper (CSS background). */
   paper: string;
-  /** CSS filter for the photos. */
-  filter: string;
+  /** Background of each photo frame. */
+  frame: string;
+  /** One "pose" per frame. */
+  poses: string[];
   caption: string;
   captionColor: string;
   captionFont: string;
 }
 
-// Each frame zooms into a different part of the photo so it reads like 4 different shots.
-const SHOTS = ["18% 46%", "52% 42%", "84% 47%", "40% 58%"];
 
 function MiniStrip({ look, className, style }: { look: StripLook; className: string; style?: CSSProperties }) {
   return (
@@ -44,17 +52,14 @@ function MiniStrip({ look, className, style }: { look: StripLook; className: str
         className="flex w-[92px] flex-col gap-[5px] rounded-[6px] p-[6px] pb-0 min-[400px]:w-[104px] shadow-[0_6px_18px_-8px_rgba(0,0,0,0.3)] ring-1 ring-black/5 sm:w-[148px] sm:gap-2 sm:p-[10px]"
         style={{ background: look.paper }}
       >
-        {SHOTS.map((pos) => (
+        {look.poses.map((src, i) => (
           <div
-            key={pos}
-            className="aspect-[4/3] w-full rounded-[2px]"
-            style={{
-              backgroundImage: `url(${boothImage})`,
-              backgroundSize: "300%",
-              backgroundPosition: pos,
-              filter: look.filter,
-            }}
-          />
+            key={i}
+            className="flex aspect-[4/3] w-full items-center justify-center rounded-[2px]"
+            style={{ background: look.frame }}
+          >
+            <img src={src} alt="" draggable={false} className="h-[72%] w-auto" style={{ rotate: `${(i % 2 ? 1 : -1) * 6}deg` }} />
+          </div>
         ))}
         <div
           className="flex h-8 items-center justify-center sm:h-11"
@@ -70,7 +75,8 @@ function MiniStrip({ look, className, style }: { look: StripLook; className: str
 const LOOKS: StripLook[] = [
   {
     paper: "#ffffff",
-    filter: "grayscale(1) contrast(1.2) brightness(1.05)",
+    frame: "#f1f1f3",
+    poses: [pGrin, pWink, pCool, pKiss],
     caption: "snap snap!",
     captionColor: "#111827",
     captionFont: "'Outfit', sans-serif",
@@ -78,14 +84,16 @@ const LOOKS: StripLook[] = [
   {
     paper:
       "linear-gradient(90deg, rgba(244,114,182,0.4) 50%, transparent 50%) 0 0 / 16px 16px, linear-gradient(rgba(244,114,182,0.4) 50%, #fff 50%) 0 0 / 16px 16px",
-    filter: "saturate(1.15) brightness(1.08) contrast(0.92)",
+    frame: "#fde7ee",
+    poses: [bunny, cat, bear, chick],
     caption: "besties ♡",
     captionColor: "#be185d",
     captionFont: "'Caveat', cursive",
   },
   {
     paper: "linear-gradient(180deg, #6b1d28, #4a121a)",
-    filter: "sepia(0.35) contrast(1.05) saturate(1.1)",
+    frame: "#f4e8dc",
+    poses: [pLaugh, pAngel, pWow, heartEyes],
     caption: "'26 11 27",
     captionColor: "#ff9533",
     captionFont: "'Share Tech Mono', monospace",
@@ -127,12 +135,6 @@ function HeroVisual() {
 export default function HeroPage({ dark, onToggleDark, onStartBooth }: HeroPageProps) {
   const text = dark ? "#f4f4f5" : "#111827";
   const sub = dark ? "#a1a1aa" : "#6b7280";
-  const imageStickers = STICKERS.filter((s) => s.kind === "image").length;
-  const stats = [
-    { n: FILTERS.length, label: "filters" },
-    { n: THEMES.length, label: "frame designs" },
-    { n: `${imageStickers}+`, label: "stickers" },
-  ];
 
   return (
     <div
@@ -166,7 +168,7 @@ export default function HeroPage({ dark, onToggleDark, onStartBooth }: HeroPageP
           >
             Strike a pose.
             <br />
-            <span className="text-red-600">
+            <span className="text-red-600 dark:text-red-400">
               Do it{" "}
               <span className="relative inline-block" style={{ fontFamily: "'Caveat', cursive", fontWeight: 700 }}>
                 <span className="relative z-10 text-[1.15em]">again.</span>
@@ -177,7 +179,7 @@ export default function HeroPage({ dark, onToggleDark, onStartBooth }: HeroPageP
                   className="absolute -bottom-1 left-0 h-[0.28em] w-full"
                   aria-hidden
                 >
-                  <path d="M4 14 Q50 4 100 11 T196 8" fill="none" stroke="#dc2626" strokeOpacity="0.28" strokeWidth="5" strokeLinecap="round" />
+                  <path d="M4 14 Q50 4 100 11 T196 8" fill="none" stroke="#7a1f2b" strokeOpacity="0.28" strokeWidth="5" strokeLinecap="round" />
                 </svg>
               </span>
             </span>
@@ -213,25 +215,6 @@ export default function HeroPage({ dark, onToggleDark, onStartBooth }: HeroPageP
             </a>
           </div>
 
-          {/* Live numbers straight from the configs */}
-          <div
-            className="animate-fade-up mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 lg:justify-start"
-            style={reveal(400)}
-          >
-            {stats.map((s) => (
-              <div key={s.label} className="flex items-baseline gap-1.5">
-                <span className="text-2xl tabular-nums" style={{ fontWeight: 800, color: text }}>
-                  {s.n}
-                </span>
-                <span className="text-sm" style={{ color: sub }}>
-                  {s.label}
-                </span>
-              </div>
-            ))}
-            <div className="flex items-center gap-1.5 text-sm" style={{ color: sub }}>
-              <ShieldCheck size={16} className="text-red-600" /> 100% private
-            </div>
-          </div>
         </section>
 
         {/* Visual */}

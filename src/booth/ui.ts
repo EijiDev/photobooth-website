@@ -1,6 +1,6 @@
 /**
- * UI palette for the setup + booth pages — Pose & Repeat's red & white brand
- * (same colours as the NavBar / hero: red-600 accent, white panels, gray text).
+ * UI palette for the setup + booth pages — Pose & Repeat's dark-maroon & white brand
+ * (same colours as the NavBar / hero: maroon accent, white panels, gray text).
  */
 export interface BoothPalette {
   bg: string;
@@ -22,9 +22,9 @@ export function boothPalette(dark: boolean): BoothPalette {
         border: "#2a2a2a",
         text: "#f4f4f5",
         sub: "#71717a",
-        accent: "#dc2626",
-        accentHover: "#b91c1c",
-        accentSoft: "#1f0b0b",
+        accent: "#b54a5d",
+        accentHover: "#9a3a4c",
+        accentSoft: "#211012",
         chip: "#1a1a1a",
       }
     : {
@@ -33,9 +33,9 @@ export function boothPalette(dark: boolean): BoothPalette {
         border: "#e5e7eb",
         text: "#111827",
         sub: "#6b7280",
-        accent: "#dc2626",
-        accentHover: "#b91c1c",
-        accentSoft: "#fef2f2",
+        accent: "#7a1f2b",
+        accentHover: "#5f1621",
+        accentSoft: "#f8eef0",
         chip: "#f3f4f6",
       };
 }
