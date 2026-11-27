@@ -59,7 +59,7 @@ function collageSlots(count: number, area: Box): Slot[] {
     for (let c = 0; c < cols; c++) {
       const i = slots.length;
       const h = cellH - mat - matBottom - 36;
-      const w = Math.min(cellW - mat * 2 - 36, h * 1.5);
+      const w = Math.min(cellW - mat * 2 - 36, h * 1.25);
       const cx = area.x + cellW * (c + 0.5) + (i % 2 ? 10 : -10);
       const cy = area.y + cellH * (r + 0.5) - (matBottom - mat) / 2;
       slots.push({ x: cx - w / 2, y: cy - h / 2, w, h, rotate: COLLAGE_TILT[i % 6], mat });
@@ -125,7 +125,7 @@ export const FRAMES: FrameDef[] = [
     defaultTheme: "white",
     defaultCaption: "snap snap!",
     build: () => {
-      const W = 600, H = 1800, m = 36, text = 250;
+      const W = 600, H = 2100, m = 36, text = 250;
       return {
         width: W,
         height: H,
@@ -183,7 +183,7 @@ export const FRAMES: FrameDef[] = [
     defaultFont: "pixel",
     decorate: filmDecor,
     build: () => {
-      const W = 720, H = 2000, text = 260;
+      const W = 720, H = 2250, text = 260;
       return {
         width: W,
         height: H,
@@ -266,9 +266,9 @@ export const FRAMES: FrameDef[] = [
     defaultFont: "bold-sans",
     build: (count) => ({
       width: 1200,
-      height: 1600,
-      slots: collageSlots(count, { x: 60, y: 50, w: 1080, h: 1290 }),
-      textArea: { x: 60, y: 1375, w: 1080, h: 195 },
+      height: 1800,
+      slots: collageSlots(count, { x: 60, y: 50, w: 1080, h: 1490 }),
+      textArea: { x: 60, y: 1575, w: 1080, h: 195 },
       captionSize: 96,
     }),
   },

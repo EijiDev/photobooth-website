@@ -12,6 +12,8 @@ import { coverCrop, ctx2d, fillRoundRect } from "./canvas";
 import { shapePath } from "./shapes";
 import { getLoadedImage } from "./stickerImages";
 import { themeBackground } from "./themeArt";
+import { brandMark, isLightColor } from "./brandMark";
+import { BRAND } from "../../brand";
 import { DATE_STAMP, formatDateStamp } from "./layers";
 
 export interface ComposeOptions {
@@ -122,7 +124,16 @@ interface TextLine {
   font: (size: number) => string;
   color: string;
   glow?: string;
+  /** Logo drawn to the left of the text (watermark line). */
+  mark?: HTMLImageElement | null;
+  /** Line height factor (default 1.3). */
+  lh?: number;
+  alpha?: number;
 }
+
+const LINE = 1.3;
+/** Extra width taken by a line's logo (mark + gap), relative to its font size. */
+const markExtra = (l: TextLine) => (l.mark ? l.size * 1.75 : 0);
 
 /** Caption, footer and date stamp, stacked and centred in the layout's text area. */
 function drawText(
@@ -161,18 +172,26 @@ function drawText(
       glow: DATE_STAMP.glow,
     });
   }
-  if (!lines.length) return;
+  // Watermark: logo + name on every strip, for recognition.
+  lines.push({
+    text: BRAND.name.toLowerCase(),
+    size: layout.captionSize * 0.24,
+    font: (s) => fontString(700, s, UI_FONT),
+    color: theme.subInk,
+    mark: brandMark(isLightColor(theme.ink)),
+    lh: 2,
+    alpha: 0.9,
+  });
 
   // Shrink long lines to fit the width…
   const maxW = box.w * 0.92;
   for (const line of lines) {
     ctx.font = line.font(line.size);
-    const w = ctx.measureText(line.text).width;
+    const w = ctx.measureText(line.text).width + markExtra(line);
     if (w > maxW) line.size *= maxW / w;
   }
   // …and the whole block to fit the height.
-  const LINE = 1.3;
-  let total = lines.reduce((sum, l) => sum + l.size * LINE, 0);
+  let total = lines.reduce((sum, l) => sum + l.size * (l.lh ?? LINE), 0);
   if (total > box.h) {
     const k = box.h / total;
     lines.forEach((l) => (l.size *= k));
@@ -184,7 +203,7 @@ function drawText(
     const widest = Math.max(
       ...lines.map((l) => {
         ctx.font = l.font(l.size);
-        return ctx.measureText(l.text).width;
+        return ctx.measureText(l.text).width + markExtra(l);
       }),
     );
     const pw = Math.min(box.w, widest + 80);
@@ -201,8 +220,24 @@ function drawText(
     ctx.fillStyle = line.color;
     ctx.shadowColor = line.glow ?? "transparent";
     ctx.shadowBlur = line.glow ? line.size * 0.35 : 0;
-    ctx.fillText(line.text, box.x + box.w / 2, y + (line.size * LINE) / 2);
-    y += line.size * LINE;
+    ctx.globalAlpha = line.alpha ?? 1;
+    const lh = line.size * (line.lh ?? LINE);
+    const cy = y + lh / 2;
+    if (line.mark) {
+      // [logo] pose & repeat — centred as one unit
+      const m = line.size * 1.4;
+      const gap = line.size * 0.35;
+      const tw = ctx.measureText(line.text).width;
+      const x0 = box.x + box.w / 2 - (m + gap + tw) / 2;
+      ctx.drawImage(line.mark, x0, cy - m / 2, m, m);
+      ctx.textAlign = "left";
+      ctx.fillText(line.text, x0 + m + gap, cy);
+      ctx.textAlign = "center";
+    } else {
+      ctx.fillText(line.text, box.x + box.w / 2, cy);
+    }
+    ctx.globalAlpha = 1;
+    y += lh;
   }
   ctx.restore();
 }

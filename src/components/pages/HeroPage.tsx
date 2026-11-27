@@ -1,7 +1,6 @@
 import type { CSSProperties } from "react";
 import { ArrowDown, Camera } from "lucide-react";
 import NavBar from "../layout/NavBar";
-import { LogoMark } from "../layout/Logo";
 import { BRAND } from "../../brand";
 // Emoji "poses" shown inside the hero strips (no real photos).
 import pGrin from "../../assets/stickers/props-grin.svg";
@@ -146,21 +145,6 @@ export default function HeroPage({ dark, onToggleDark, onStartBooth }: HeroPageP
       <main className="relative z-10 mx-auto grid max-w-6xl items-center gap-6 px-6 pb-20 pt-8 sm:pt-14 lg:grid-cols-[1.05fr_1fr] lg:gap-6 lg:pb-28 lg:pt-16">
         {/* Copy */}
         <section className="flex flex-col items-center text-center lg:items-start lg:text-left">
-          <div
-            className="animate-fade-up mb-6 inline-flex items-center gap-2 rounded-full border py-1.5 pl-1.5 pr-4 text-sm"
-            style={{
-              ...reveal(0),
-              fontWeight: 600,
-              borderColor: dark ? "#2a2a2a" : "#e5e7eb",
-              backgroundColor: dark ? "#161616" : "#ffffff",
-              color: dark ? "#d4d4d8" : "#374151",
-            }}
-          >
-            <span className="flex h-7 w-7 items-center justify-center rounded-full" style={{ backgroundColor: dark ? "#ffffff" : "#f3f4f6" }}>
-              <LogoMark size={22} />
-            </span>
-            Your pocket photobooth
-          </div>
 
           <h1
             className="animate-fade-up text-5xl leading-[1.02] tracking-tight sm:text-7xl"

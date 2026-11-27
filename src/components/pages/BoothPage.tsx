@@ -20,6 +20,7 @@ import { DEFAULT_FILTER_ID, getFilter } from "../../booth/config/filters";
 import { ensureFonts } from "../../booth/config/fonts";
 import { DEFAULT_STICKER_SIZE, getSticker } from "../../booth/config/stickers";
 import { preloadStickerImages } from "../../booth/render/stickerImages";
+import { preloadBrandMarks } from "../../booth/render/brandMark";
 import { resolveLook } from "../../booth/render/look";
 import { formatDateStamp } from "../../booth/render/layers";
 import { makeThumb } from "../../booth/render/renderLook";
@@ -261,7 +262,7 @@ export default function BoothPage({ dark, onToggleDark, config, onBack, onHome }
     processed.canvases.every(Boolean);
 
   const buildPng = useCallback(async () => {
-    await Promise.all([ensureFonts(), preloadStickerImages(stickers)]);
+    await Promise.all([ensureFonts(), preloadStickerImages(stickers), preloadBrandMarks()]);
     // Render on a fresh CPU-backed canvas; verify it isn't blank and retry once if it is.
     for (let attempt = 0; attempt < 2; attempt++) {
       const canvas = composeDesign(createCanvas(1, 1), design, layout, processed.canvases, {

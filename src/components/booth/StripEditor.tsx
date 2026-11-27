@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Design, Layout, PlacedSticker } from "../../booth/types";
 import { composeDesign } from "../../booth/render/compose";
 import { ensureFonts } from "../../booth/config/fonts";
+import { preloadBrandMarks } from "../../booth/render/brandMark";
 import { useElementSize } from "../../hooks/useElementSize";
 import StickerLayer from "./StickerLayer";
 
@@ -44,7 +45,7 @@ export default function StripEditor({
   // Redraw once web fonts are ready (canvas can't wait for them by itself).
   useEffect(() => {
     let alive = true;
-    ensureFonts().then(() => alive && setFontsTick((t) => t + 1));
+    Promise.all([ensureFonts(), preloadBrandMarks()]).then(() => alive && setFontsTick((t) => t + 1));
     return () => {
       alive = false;
     };

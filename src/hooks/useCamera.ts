@@ -17,6 +17,17 @@ function cameraErrorMessage(err: unknown): string {
   return "Couldn't start the camera. Please reload and try again.";
 }
 
+/** Use the widest zoom the camera allows (some phones default to a tighter crop). */
+function zoomOut(stream: MediaStream) {
+  const track = stream.getVideoTracks()[0];
+  const caps = track?.getCapabilities?.() as (MediaTrackCapabilities & { zoom?: { min: number } }) | undefined;
+  if (caps?.zoom) {
+    track
+      .applyConstraints({ advanced: [{ zoom: caps.zoom.min } as MediaTrackConstraintSet] })
+      .catch(() => {});
+  }
+}
+
 /**
  * Starts the camera while `active` is true and stops every track when it turns
  * false or the component unmounts. Safe under React StrictMode: a stream that
@@ -34,7 +45,14 @@ export function useCamera(active: boolean, facing: Facing) {
 
     const request = navigator.mediaDevices?.getUserMedia
       ? navigator.mediaDevices.getUserMedia({
-          video: { facingMode: facing, width: { ideal: 1920 }, height: { ideal: 1080 } },
+          // 4:3 is the sensor's native shape: 16:9 modes crop it and look "zoomed in",
+          // especially on phone front cameras.
+          video: {
+            facingMode: facing,
+            width: { ideal: 1600 },
+            height: { ideal: 1200 },
+            aspectRatio: { ideal: 4 / 3 },
+          },
           audio: false,
         })
       : Promise.reject(new Error("getUserMedia unavailable"));
@@ -46,6 +64,7 @@ export function useCamera(active: boolean, facing: Facing) {
           return;
         }
         current = s;
+        zoomOut(s);
         setStream(s);
         setError(null);
       })
